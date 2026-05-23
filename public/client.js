@@ -410,14 +410,27 @@ function wireControls() {
     window.setTimeout(() => { elements.copyLinkBtn.textContent = orig; }, 1400);
   });
 
-  elements.fullscreenBtn.addEventListener('click', async () => {
-    try {
-      if (document.fullscreenElement) await document.exitFullscreen();
-      else await elements.playerFrame.requestFullscreen();
-    } catch {
-      elements.videoHelper.textContent = 'Plein écran indisponible dans ce navigateur.';
+  // Dans wireControls(), remplace l'écouteur existant par :
+elements.fullscreenBtn.addEventListener('click', async () => {
+  const el = elements.playerFrame;
+  const rfs = el.requestFullscreen ||
+              el.webkitRequestFullscreen ||
+              el.msRequestFullscreen;
+  const efs = document.exitFullscreen ||
+              document.webkitExitFullscreen ||
+              document.msExitFullscreen;
+
+  try {
+    if (document.fullscreenElement || document.webkitFullscreenElement) {
+      (efs || document.exitFullscreen).call(document);
+    } else {
+      (rfs || el.requestFullscreen).call(el);
     }
-  });
+  } catch (err) {
+    console.warn(err);
+    elements.videoHelper.textContent = 'Plein écran non supporté.';
+  }
+});
 
   elements.claimHostBtn.addEventListener('click', () => {
     state.socket.emit('claim-host', state.room);
@@ -517,7 +530,15 @@ function addMessage({ text, gifUrl, sender, isMe }) {
 // ════════════════════════════════════════════════════════════════════
 
 function wireEmojiPicker() {
-  customElements.whenDefined('emoji-picker').then(() => {
+  // Attendre que le DOM soit prêt ET que le custom element soit défini
+  const initPicker = () => {
+    if (!customElements.get('emoji-picker')) {
+      // Pas encore défini, réessayer dans 100ms
+      setTimeout(initPicker, 100);
+      return;
+    }
+    // Nettoyer l'ancien conteneur (évite doublons)
+    elements.emojiPickerContainer.innerHTML = '';
     const picker = document.createElement('emoji-picker');
     picker.addEventListener('emoji-click', (event) => {
       elements.chatInput.value += event.detail.unicode;
@@ -525,9 +546,13 @@ function wireEmojiPicker() {
       elements.emojiPickerContainer.classList.add('hidden');
     });
     elements.emojiPickerContainer.appendChild(picker);
-  });
+  };
 
-  elements.emojiBtn.addEventListener('click', () => {
+  initPicker();
+
+  // Toggle du panneau
+  elements.emojiBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
     elements.emojiPickerContainer.classList.toggle('hidden');
     elements.gifPickerContainer.classList.add('hidden');
   });

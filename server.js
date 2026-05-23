@@ -73,11 +73,13 @@ app.get('/api/stream', (req, res) => {
   const ytDlpCmd = fs.existsSync(localYtDlp) ? localYtDlp : 'yt-dlp';
   console.log(`Utilisation de yt-dlp : ${ytDlpCmd}`);
   // Lancer yt-dlp (doit être présent dans le dossier du projet ou dans le PATH)
-  const ytDlp = spawn(ytDlpCmd, [
-    '-f', 'best',    // meilleure qualité
-    '-g',            // affiche l'URL sans télécharger
+const ytDlp = spawn(ytDlpCmd, [
+    '-f', 'b',
+    '-g',
+    '--cookies', 'cookies.txt',
+    '--no-warnings',
     videoUrl
-  ]);
+]);
 
   let output = '';
   let errorOutput = '';

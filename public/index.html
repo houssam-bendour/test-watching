@@ -2,38 +2,48 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#09090f">
   <title>Watch Together</title>
   <link rel="stylesheet" href="style.css">
-  
 </head>
 <body>
   <main class="app-shell">
+ 
+    <!-- ══════════════════════════════════════════════
+         PROFILE / JOIN SCREEN
+    ══════════════════════════════════════════════ -->
     <section class="profile-screen" id="profile-screen" aria-labelledby="profile-title">
+ 
       <div class="brand">
         <span class="brand-mark">WT</span>
         <div>
-          <p class="eyebrow">Session privee</p>
+          <p class="eyebrow">Session privée</p>
           <h1 id="profile-title">Watch Together</h1>
         </div>
       </div>
-
+ 
       <div class="profile-grid">
-        <div class="intro-panel">
-          <p class="intro-kicker">Regarder, parler, reagir</p>
-          <h2>Une salle video claire pour deux personnes ou plus.</h2>
+        <!-- Intro panel (visible on desktop, hidden on mobile via CSS) -->
+        <div class="intro-panel" aria-hidden="true">
+          <p class="intro-kicker">Regarder · Parler · Réagir</p>
+          <h2>Une salle vidéo intime pour vous deux.</h2>
           <p>
-            Creez votre profil local, collez une URL YouTube complete, partagez le lien de la room
+            Créez votre profil, collez une URL YouTube, partagez le lien
             et gardez une seule personne aux commandes.
           </p>
         </div>
-
-        <form class="join-card" id="profile-form">
+ 
+        <form class="join-card" id="profile-form" novalidate>
           <label for="display-name">Votre nom</label>
-          <input id="display-name" name="displayName" autocomplete="name" maxlength="28" placeholder="Ex: Yassine">
-
+          <input id="display-name" name="displayName" autocomplete="name"
+                 maxlength="28" placeholder="Ex : Wafae">
+ 
           <label for="avatar-choice">Avatar</label>
           <select id="avatar-choice" name="avatar">
+            <option value="W">W</option>
             <option value="Y">Y</option>
             <option value="A">A</option>
             <option value="M">M</option>
@@ -41,105 +51,137 @@
             <option value="N">N</option>
             <option value="L">L</option>
           </select>
-
-          <label for="room-name">Room</label>
-          <input id="room-name" name="roomName" maxlength="32" placeholder="Soiree cinema">
-
-          <button class="primary-btn" type="submit">Entrer dans la room</button>
-          <p class="form-note">Le profil est garde sur cet appareil. Pas encore de compte serveur ni mot de passe.</p>
+ 
+          <label for="room-name">Nom de la room</label>
+          <input id="room-name" name="roomName" maxlength="32"
+                 placeholder="Soirée cinéma ✨">
+ 
+          <button class="primary-btn" type="submit">Entrer dans la room →</button>
+          <p class="form-note">
+            Votre profil reste sur cet appareil uniquement.
+            Pas de compte requis.
+          </p>
         </form>
       </div>
     </section>
-
+ 
+    <!-- ══════════════════════════════════════════════
+         WATCH SCREEN
+    ══════════════════════════════════════════════ -->
     <section class="watch-screen hidden" id="watch-screen" aria-label="Room Watch Together">
+ 
+      <!-- ── Top Bar ── -->
       <header class="topbar">
         <div class="brand compact">
           <span class="brand-mark">WT</span>
           <div>
-            <p class="eyebrow">Room privee</p>
+            <p class="eyebrow">Room</p>
             <h1>Watch Together</h1>
           </div>
         </div>
-
+ 
         <div class="room-tools">
           <div class="room-pill">
-            <span id="room-label">Room</span>
+            <span id="room-label">🎬</span>
             <strong id="room-code"></strong>
           </div>
-          <button class="secondary-btn" id="copy-link-btn" type="button">Copier le lien</button>
+          <button class="secondary-btn" id="copy-link-btn" type="button">Copier</button>
         </div>
       </header>
-
-      <div class="workspace">
-        <section class="video-column">
-          <div class="status-row">
-            <div>
-              <span class="status-dot" id="connection-dot"></span>
-              <span id="connection-status">Connexion...</span>
-            </div>
+ 
+      <!-- ── Video Zone ── -->
+      <div class="video-zone">
+ 
+        <!-- Status row -->
+        <div class="status-row">
+          <div class="status-left">
+            <span class="status-dot" id="connection-dot"></span>
+            <span id="connection-status">Connexion…</span>
+          </div>
           <div class="host-controls">
             <span class="role-badge" id="host-badge">Spectateur</span>
-              <button class="ghost-btn hidden" id="claim-host-btn" type="button">Prendre le controle</button>
+            <button class="ghost-btn hidden" id="claim-host-btn" type="button">
+              Prendre le contrôle
+            </button>
           </div>
+        </div>
+ 
+        <!-- URL form (host only) -->
+        <form class="video-form" id="video-form">
+          <label class="sr-only" for="video-url">URL YouTube</label>
+          <input id="video-url" type="url"
+                 placeholder="Coller une URL YouTube ou youtu.be…">
+          <button class="primary-btn" id="load-video" type="submit">Charger</button>
+        </form>
+ 
+        <p class="helper-text" id="video-helper">
+          Seul le host peut changer la vidéo. Les spectateurs sont synchronisés.
+        </p>
+ 
+        <!-- Player -->
+        <div class="player-frame">
+          <div id="player"></div>
+          <div id="direct-player-container" style="display:none;">
+            <video id="direct-player" controls
+                   style="position:absolute;top:0;left:0;width:100%;height:100%;background:#000;">
+            </video>
           </div>
-
-          <form class="video-form" id="video-form">
-            <label class="sr-only" for="video-url">URL YouTube</label>
-            <input id="video-url" type="url" placeholder="Collez une URL YouTube, Shorts ou youtu.be">
-            <button class="primary-btn" id="load-video" type="submit">Charger</button>
-          </form>
-          <p class="helper-text" id="video-helper">Le host peut changer la video. Les spectateurs restent synchronises.</p>
-
-          <div class="player-frame">
-            <div id="player"></div>
-	    <!-- Lecteur vidéo direct (utilisé avec yt-dlp) -->
-	    <div id="direct-player-container" style="display:none;">
-              <video id="direct-player" controls width="100%" height="100%" style="position:absolute; top:0; left:0; width:100%; height:100%; border-radius:8px; background:#000;"></video>
-	    </div>
-            <div class="player-lock hidden" id="player-lock" aria-hidden="true"></div>
-            <button class="fullscreen-btn" id="fullscreen-btn" type="button" aria-label="Plein ecran">⛶</button>
-          </div>
-
-          <div class="call-controls">
-            <button class="secondary-btn" id="start-call-btn" type="button">Demarrer l'appel</button>
-            <button class="danger-btn" id="hangup-btn" type="button" disabled>Raccrocher</button>
-            <span id="call-status">Audio inactif</span>
-          </div>
-        </section>
-
-        <aside class="side-panel">
-          <section class="panel-section">
-            <div class="panel-heading">
-              <h2>Participants</h2>
-              <span id="participant-count">0</span>
-            </div>
-            <div class="participants" id="participants"></div>
-          </section>
-
-          <section class="panel-section chat-section">
-            <div class="panel-heading">
-              <h2>Chat</h2>
-              <button class="ghost-btn" id="gif-btn" type="button">GIF</button>
-            </div>
-            <div id="messages" class="messages" aria-live="polite"></div>
-            <div id="gif-picker-container" class="gif-picker hidden"></div>
-            <form class="chat-form" id="chat-form">
-              <button class="icon-btn" id="emoji-btn" type="button" aria-label="Ajouter un emoji">+</button>
-              <input id="chat-input" type="text" maxlength="500" placeholder="Ecrire un message">
-              <button class="primary-btn" id="send-btn" type="submit">Envoyer</button>
-            </form>
-            <div id="emoji-picker-container" class="emoji-picker hidden"></div>
-          </section>
-        </aside>
+          <div class="player-lock hidden" id="player-lock" aria-hidden="true"></div>
+          <button class="fullscreen-btn" id="fullscreen-btn" type="button"
+                  aria-label="Plein écran">⛶</button>
+        </div>
+ 
+        <!-- Call controls -->
+        <div class="call-controls">
+          <button class="secondary-btn" id="start-call-btn" type="button">🎙 Appel</button>
+          <button class="danger-btn" id="hangup-btn" type="button" disabled>Raccrocher</button>
+          <span id="call-status">Audio inactif</span>
+        </div>
       </div>
+ 
+      <!-- ── Social Zone (scrollable chat area) ── -->
+      <div class="social-zone">
+ 
+        <!-- Participants strip -->
+        <div class="participants-strip" id="participants"
+             role="list" aria-label="Participants">
+          <!-- Participant items injected by JS -->
+        </div>
+ 
+        <!-- GIF picker (injected above messages) -->
+        <div id="gif-picker-container" class="gif-picker hidden"></div>
+ 
+        <!-- Emoji picker -->
+        <div id="emoji-picker-container" class="emoji-picker hidden"></div>
+ 
+        <!-- Messages -->
+        <div id="messages" class="messages" aria-live="polite" aria-atomic="false">
+          <!-- Messages injected by JS -->
+        </div>
+      </div>
+ 
+      <!-- ── Input Dock (fixed bottom) ── -->
+      <div class="input-dock">
+        <form class="chat-form" id="chat-form">
+          <button class="icon-btn" id="emoji-btn" type="button"
+                  aria-label="Emoji">😊</button>
+          <input id="chat-input" type="text" maxlength="500"
+                 placeholder="Message…" autocomplete="off">
+          <button class="ghost-btn" id="gif-btn" type="button">GIF</button>
+          <button class="primary-btn" id="send-btn" type="submit"
+                  aria-label="Envoyer">↑</button>
+        </form>
+      </div>
+ 
     </section>
   </main>
-
+ 
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <script src="/socket.io/socket.io.js"></script>
   <script src="https://www.youtube.com/iframe_api"></script>
   <script src="https://unpkg.com/simple-peer/simplepeer.min.js"></script>
-  <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@1/index.js"></script>
+  <script type="module"
+          src="https://cdn.jsdelivr.net/npm/emoji-picker-element@1/index.js"></script>
   <script src="client.js"></script>
 </body>
 </html>
